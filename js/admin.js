@@ -1,4 +1,42 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Handle landing page loader with a more professional animation
+    const landingLoader = document.querySelector('.landing-loader');
+    const loaderText = document.querySelector('.loader-text');
+    
+    if (landingLoader) {
+        // Array of loading messages to display
+        const loadingMessages = [
+            "Initializing dashboard...",
+            "Loading product data...",
+            "Preparing admin interface...",
+            "Almost ready..."
+        ];
+        
+        let messageIndex = 0;
+        
+        // Change loading message every 1.2 seconds
+        const messageInterval = setInterval(() => {
+            if (messageIndex < loadingMessages.length - 1) {
+                messageIndex++;
+                loaderText.textContent = loadingMessages[messageIndex];
+            } else {
+                clearInterval(messageInterval);
+            }
+        }, 1200);
+        
+        // Simulate a more realistic loading time (2.5 seconds)
+        setTimeout(() => {
+            // Add class for smooth fade out
+            landingLoader.classList.add('fade-out');
+            
+            // Remove from DOM after transition completes
+            setTimeout(() => {
+                landingLoader.remove();
+                clearInterval(messageInterval);
+            }, 700); // Match this with the CSS transition time
+        }, 4000); // 4 seconds total loading time
+    }
+
     // Initialize the admin panel once products and categories are loaded
     document.addEventListener('products-loaded', () => {
         loadProductTable();

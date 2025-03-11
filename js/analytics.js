@@ -92,6 +92,7 @@ class AnalyticsManager {
             this.updateTotalStats(interactions);
             this.updateInteractionsChart(interactions);
             await this.updateTopProducts(interactions);
+            this.updateLocationStats(interactions);
 
         } catch (error) {
             console.error('Error loading analytics data:', error);
@@ -107,10 +108,21 @@ class AnalyticsManager {
                 </tr>
             `;
             
+            document.getElementById('locations-table').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">Error loading location data. Please check console for details.</td>
+                </tr>
+            `;
+            
             // Clear chart if it exists
             if (this.interactionsChart) {
                 this.interactionsChart.destroy();
                 this.interactionsChart = null;
+            }
+            
+            if (this.locationChart) {
+                this.locationChart.destroy();
+                this.locationChart = null;
             }
             
             // Show error message
@@ -126,6 +138,11 @@ class AnalyticsManager {
         document.getElementById('top-products-table').innerHTML = `
             <tr>
                 <td colspan="4" class="text-center">Loading data...</td>
+            </tr>
+        `;
+        document.getElementById('locations-table').innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center">Loading location data...</td>
             </tr>
         `;
     }
@@ -395,6 +412,217 @@ class AnalyticsManager {
         } catch (error) {
             console.error('Error getting product details:', error);
             return {};
+        }
+    }
+
+    // Update location stats
+    updateLocationStats(interactions) {
+        try {
+            // Group interactions by location
+            const locationData = this.groupInteractionsByLocation(interactions);
+            
+            // Update location chart
+            this.updateLocationChart(locationData);
+            
+            // Update location table
+            this.updateLocationTable(locationData);
+        } catch (error) {
+            console.error('Error updating location stats:', error);
+            
+            // Show error message in the location table
+            document.getElementById('locations-table').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">Error loading location data</td>
+                </tr>
+            `;
+            
+            // Clear chart if it exists
+            if (this.locationChart) {
+                this.locationChart.destroy();
+                this.locationChart = null;
+            }
+        }
+    }
+    
+    // Group interactions by location
+    groupInteractionsByLocation(interactions) {
+        const locationGroups = {};
+        
+        interactions.forEach(interaction => {
+            // Skip if location data is missing
+            if (!interaction.location) return;
+            
+            const country = interaction.location.country || 'Unknown';
+            const region = interaction.location.region || 'Unknown';
+            const city = interaction.location.city || 'Unknown';
+            
+            // Create location key
+            const locationKey = `${country}|${region}|${city}`;
+            
+            if (!locationGroups[locationKey]) {
+                locationGroups[locationKey] = {
+                    country,
+                    region,
+                    city,
+                    count: 0
+                };
+            }
+            
+            locationGroups[locationKey].count++;
+        });
+        
+        // Convert to array and sort by count
+        return Object.values(locationGroups).sort((a, b) => b.count - a.count);
+    }
+    
+    // Update location chart
+    updateLocationChart(locationData) {
+        try {
+            const ctx = document.getElementById('location-chart').getContext('2d');
+            
+            if (this.locationChart) {
+                this.locationChart.destroy();
+            }
+            
+            // If no data, show empty chart with message
+            if (locationData.length === 0) {
+                this.locationChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{
+                            label: 'No location data available',
+                            data: [0],
+                            backgroundColor: '#f8f9fa'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                return;
+            }
+            
+            // Take top 10 locations for the chart
+            const topLocations = locationData.slice(0, 10);
+            
+            // Prepare data for chart
+            const labels = topLocations.map(loc => loc.country === 'Unknown' ? 'Unknown' : 
+                (loc.city === 'Unknown' ? loc.country : `${loc.city}, ${loc.country}`));
+            const counts = topLocations.map(loc => loc.count);
+            
+            // Create chart
+            this.locationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Interactions by Location',
+                        data: counts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Interactions: ${context.raw}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error updating location chart:', error);
+            
+            // Create empty chart with error message
+            const ctx = document.getElementById('location-chart').getContext('2d');
+            if (this.locationChart) {
+                this.locationChart.destroy();
+            }
+            this.locationChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Error'],
+                    datasets: [{
+                        label: 'Error loading chart data',
+                        data: [0],
+                        backgroundColor: '#ffcccc'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    }
+    
+    // Update location table
+    updateLocationTable(locationData) {
+        try {
+            const tableBody = document.getElementById('locations-table');
+            tableBody.innerHTML = '';
+            
+            if (locationData.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center">No location data available</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Take top 20 locations for the table
+            const topLocations = locationData.slice(0, 20);
+            
+            topLocations.forEach(location => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${location.country}</td>
+                    <td>${location.region}</td>
+                    <td>${location.city}</td>
+                    <td>${location.count}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error updating location table:', error);
+            const tableBody = document.getElementById('locations-table');
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">Error loading location data</td>
+                </tr>
+            `;
         }
     }
 }

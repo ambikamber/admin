@@ -21,8 +21,148 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-analytics.js"></script>
     <!-- Chart.js for Analytics Dashboard -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Loading Animation Styles */
+        .landing-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.7s ease-out;
+        }
+        
+        .landing-loader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .loader-content {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 300px;
+            padding: 30px;
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(0);
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .loader-content img {
+            max-width: 120px;
+            margin-bottom: 25px;
+            display: block;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            position: relative;
+            margin: 15px auto;
+        }
+        
+        .spinner:before, .spinner:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #3498db;
+        }
+        
+        .spinner:before {
+            z-index: 10;
+            animation: spin 1s infinite;
+        }
+        
+        .spinner:after {
+            border: 3px solid rgba(52, 152, 219, 0.2);
+        }
+        
+        .loader-content h2 {
+            color: #333;
+            font-family: 'Poppins', sans-serif;
+            margin-top: 15px;
+            text-align: center;
+            width: 100%;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .loader-content h2:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #9b59b6);
+            border-radius: 3px;
+        }
+        
+        .loader-text {
+            color: #666;
+            font-size: 14px;
+            margin-top: 10px;
+            font-family: 'Poppins', sans-serif;
+            opacity: 0;
+            animation: fadeInOut 2s infinite 0.5s;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body>
+    <!-- Landing Page Loader -->
+    <div class="landing-loader">
+        <div class="loader-content">
+            <img src="images/logo.jpg" alt="Ambikamber Logo">
+            <div class="spinner"></div>
+            <h2>Ambikamber Admin</h2>
+            <p class="loader-text">Initializing dashboard...</p>
+        </div>
+    </div>
+
     <header>
         <div class="container">
             <div class="header-content">
@@ -113,6 +253,36 @@
                                         <!-- Data will be loaded dynamically -->
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-row">
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>Visitor Locations</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="location-stats-container">
+                                <div class="location-chart-container">
+                                    <canvas id="location-chart"></canvas>
+                                </div>
+                                <div class="table-container">
+                                    <table class="analytics-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Country</th>
+                                                <th>Region</th>
+                                                <th>City</th>
+                                                <th>Interactions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="locations-table">
+                                            <!-- Data will be loaded dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
