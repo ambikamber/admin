@@ -80,6 +80,9 @@ function initializePanels() {
                 navLink.classList.remove('active');
             });
             link.classList.add('active');
+            
+            // Close mobile menu when a link is clicked
+            closeMobileMenu();
         });
     });
 }
@@ -424,20 +427,21 @@ function setupEventListeners() {
     
     // Mobile menu toggle
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
-    const navLinksContainer = document.querySelector('.nav-links');
-    
-    if (mobileMenuBtn && navLinksContainer) {
+    if (mobileMenuBtn) {
         mobileMenuBtn.addEventListener('click', () => {
-            navLinksContainer.classList.toggle('active');
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.classList.toggle('active');
             
             // Toggle icon between bars and times
             const icon = mobileMenuBtn.querySelector('i');
-            if (icon.classList.contains('fa-bars')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
+            if (icon) {
+                if (icon.classList.contains('fa-bars')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
             }
         });
     }
@@ -449,18 +453,36 @@ function setupEventListeners() {
             closeMobileMenu();
         });
     });
+    
+    // Logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            // Close mobile menu if open
+            closeMobileMenu();
+            
+            // Handle logout
+            firebase.auth().signOut().then(() => {
+                // Redirect to login page or show login form
+                window.location.href = 'login.html';
+            }).catch((error) => {
+                console.error('Error signing out:', error);
+                showNotification('Error signing out. Please try again.', 'error');
+            });
+        });
+    }
 }
 
-// Helper function to close the mobile menu
+// Function to close mobile menu
 function closeMobileMenu() {
-    const navLinksContainer = document.querySelector('.nav-links');
+    const navLinks = document.querySelector('.nav-links');
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     
-    if (navLinksContainer && navLinksContainer.classList.contains('active')) {
-        navLinksContainer.classList.remove('active');
+    if (navLinks && navLinks.classList.contains('active')) {
+        navLinks.classList.remove('active');
         
         // Change icon back to bars
-        const icon = mobileMenuBtn.querySelector('i');
+        const icon = mobileMenuBtn?.querySelector('i');
         if (icon && icon.classList.contains('fa-times')) {
             icon.classList.remove('fa-times');
             icon.classList.add('fa-bars');

@@ -546,7 +546,8 @@ form.loading::after {
     }
     
     .category-management {
-        flex-direction: column;
+        grid-template-columns: 1fr;
+        gap: 20px;
     }
 }
 
@@ -563,6 +564,26 @@ form.loading::after {
     
     .input-with-button {
         flex-direction: column;
+        gap: 10px;
+    }
+    
+    .input-with-button input {
+        width: 100%;
+    }
+    
+    .input-with-button button {
+        width: 100%;
+    }
+    
+    .category-list li {
+        flex-direction: row;
+        justify-content: space-between;
+        padding: 12px;
+    }
+    
+    .category-form,
+    .category-list-container {
+        padding: 15px;
     }
 }
 
